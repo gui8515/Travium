@@ -357,10 +357,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             file_put_contents($includePath . 'config.custom.php', implode("\n", $configCustom) . "\n");
 
-            // Run installer + updater via CLI
+            // Run installer + updater via CLI using the active PHP binary.
+            $phpBin = (defined('PHP_BINARY') && is_string(PHP_BINARY) && PHP_BINARY !== '') ? PHP_BINARY : 'php';
+            $phpBin = escapeshellcmd($phpBin);
             $adminPass = $input['admin_password'];
-            $cmd1 = "/usr/bin/php7.3 $installerFile install " . escapeshellarg($adminPass);
-            $cmd2 = "/usr/bin/php7.3 $updateFile";
+            $cmd1 = "$phpBin $installerFile install " . escapeshellarg($adminPass);
+            $cmd2 = "$phpBin $updateFile";
 
             [$out1,$code1] = run_cmd($cmd1);
             [$out2,$code2] = run_cmd($cmd2);

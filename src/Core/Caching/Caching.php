@@ -29,8 +29,10 @@ class Caching
                 $key = trim(getWorldUniqueId() . explode(".", $config->settings->indexUrl)[1] . ':');
             }
             try {
+                $redisHost = getenv('REDIS_HOST') ?: '127.0.0.1';
+                $redisPort = (int)(getenv('REDIS_PORT') ?: 6379);
                 $redis = new Redis();
-                $redis->connect("127.0.0.1");
+                $redis->connect($redisHost, $redisPort);
                 $redis->setOption(Redis::OPT_PREFIX, $key);
                 self::$instance = $redis;
             } catch (\Exception $e) {

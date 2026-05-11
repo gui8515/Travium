@@ -58,7 +58,7 @@ class WebService
             $dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
             $core = preg_split('@/@',
                 str_replace($_SERVER['DOCUMENT_ROOT'], '', realpath(dirname(__FILE__))),
-                NULL,
+                0,
                 PREG_SPLIT_NO_EMPTY);
             $core = $core[0];
             $tmplt = $atRoot ? ($atCore ? "%s://%s/%s/" : "%s://%s/") : ($atCore ? "%s://%s/%s/" : "%s://%s%s");
@@ -96,7 +96,26 @@ class WebService
 
     public static function getRealDomain()
     {
-        return preg_replace("/^(.*\.)?([^.]*\..*)$/", "$2", self::getIndexUrl());
+        $host = parse_url(self::getIndexUrl(), PHP_URL_HOST);
+        if (!$host) {
+            $host = preg_replace('#^https?://#i', '', (string) self::getIndexUrl());
+            $host = preg_replace('#/.*$#', '', $host);
+        }
+
+        $host = strtolower(trim($host, '.'));
+        $parts = array_values(array_filter(explode('.', $host), 'strlen'));
+        $count = count($parts);
+
+        if ($count <= 2) {
+            return $host;
+        }
+
+        $lastLabel = $parts[$count - 1] ?? '';
+        if (strlen($lastLabel) === 2 && $count >= 3) {
+            return implode('.', array_slice($parts, -3));
+        }
+
+        return implode('.', array_slice($parts, -2));
     }
 
     public static function getIndexUrl()
@@ -120,12 +139,7 @@ class WebService
 
     public static function getJustDomain()
     {
-        return str_replace([
-            "http://",
-            '/',
-        ],
-            '',
-            preg_replace("/^(.*\.)?([^.]*\..*)$/", "$2", self::getIndexUrl()));
+        return self::getRealDomain();
     }
 
     public static function getJustSubDomain()

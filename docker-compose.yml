@@ -1,0 +1,101 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: travium-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_travium_2026
+      MYSQL_DATABASE: maindb
+      MYSQL_USER: maindb
+      MYSQL_PASSWORD: TraviumMainDb_2026
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./maindb.sql:/docker-entrypoint-initdb.d/01-maindb.sql:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot_travium_2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: travium-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php74/Dockerfile
+    container_name: travium-php
+    working_dir: /app
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    volumes:
+      - ./:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: travium-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/app:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  composer:
+    image: composer:2
+    container_name: travium-composer
+    working_dir: /app
+    user: "0:0"
+    volumes:
+      - ./:/app
+    entrypoint: ["composer"]
+
+  engine-s1:
+    build:
+      context: .
+      dockerfile: docker/php74/Dockerfile
+    container_name: travium-engine-s1
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: >
+      sh -lc "
+      while [ ! -f /app/servers/s1/include/engine.php ]; do
+        echo 'Aguardando criação do mundo s1 pelo installer...';
+        sleep 5;
+      done;
+      php /app/servers/s1/include/engine.php
+      "
+    environment:
+      TRAVIUM_UNDER_SYSTEMD: "1"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db_data:

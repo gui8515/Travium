@@ -648,13 +648,12 @@ function set_gpack_version($gpack_version)
 
 function get_gpack_cdn_url($default = false)
 {
-    return get_gpack_cdn_base_url() . get_gpack_version($default) . '/';
+    return rtrim(get_gpack_cdn_base_url(), '/') . '/' . get_gpack_version($default) . '/';
 }
 
 function get_gpack_cdn_mainPage_url($default = false)
 {
-    return get_gpack_cdn_base_url() . 'a17a8f72/mainPage/';
-    return get_gpack_cdn_base_url() . get_gpack_version($default) . '/mainPage/';
+    return rtrim(get_gpack_cdn_base_url(), '/') . '/' . get_gpack_version($default) . '/mainPage/';
 }
 
 function redirect($url, $code = 302)
