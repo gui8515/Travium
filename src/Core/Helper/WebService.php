@@ -11,6 +11,32 @@ class WebService
 {
     private static $ipAddress = null;
 
+    private static function isHttpsRequest()
+    {
+        if (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') {
+            return true;
+        }
+        if (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_SSL']) === 'on') {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_FORWARDED']) && stripos((string)$_SERVER['HTTP_FORWARDED'], 'proto=https') !== false) {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_CF_VISITOR'])) {
+            $cfVisitor = json_decode((string)$_SERVER['HTTP_CF_VISITOR'], true);
+            if (is_array($cfVisitor) && isset($cfVisitor['scheme']) && strtolower((string)$cfVisitor['scheme']) === 'https') {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static function isPost()
     {
         return strtolower($_SERVER['REQUEST_METHOD']) == 'post';
@@ -22,6 +48,8 @@ class WebService
             return self::$ipAddress;
         }
         $ip_keys = [
+            'HTTP_CF_CONNECTING_IP',
+            'HTTP_TRUE_CLIENT_IP',
             'HTTP_X_SUCURI_CLIENTIP',
             'HTTP_CLIENT_IP',
             'HTTP_X_FORWARDED_FOR',
@@ -53,7 +81,7 @@ class WebService
     public static function get_real_base_url($atRoot = TRUE, $atCore = FALSE, $parse = FALSE)
     {
         if (isset($_SERVER['HTTP_HOST'])) {
-            $http = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http';
+            $http = self::isHttpsRequest() ? 'https' : 'http';
             $hostname = $_SERVER['HTTP_HOST'];
             $dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
             $core = preg_split('@/@',
@@ -144,17 +172,17 @@ class WebService
 
     public static function getJustSubDomain()
     {
-        return str_replace([
-            "http://",
-            '/',
-        ],
-            '',
-            self::get_base_url());
+        $base = (string)self::get_base_url();
+        $host = parse_url($base, PHP_URL_HOST);
+        if ($host) {
+            return $host;
+        }
+        $base = preg_replace('#^https?://#i', '', $base);
+        return trim((string)preg_replace('#/.*$#', '', $base), '/');
     }
 
     public static function getProtocol()
     {
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-        return $protocol;
+        return self::isHttpsRequest() ? "https://" : "http://";
     }
 } 

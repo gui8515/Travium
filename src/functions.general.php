@@ -617,7 +617,7 @@ function get_gpack_cdn_base_url()
 
 function get_gpack_cdn_base_url_with_protocol()
 {
-    return 'http://cdn' . '.' . WebService::getRealDomain();
+    return WebService::getProtocol() . 'cdn' . '.' . WebService::getRealDomain();
 }
 
 function get_gpack_version($default = false)
