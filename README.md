@@ -43,6 +43,12 @@ Join our discord:
 
 > Prefer a prefilled command? Use the generator: [https://init.travium.net/](https://init.travium.net/)
 
+## Local setup without Docker
+
+If you want to run this project directly on your Linux host (no containers), use:
+
+- [SETUP_SEM_DOCKER.md](SETUP_SEM_DOCKER.md)
+
 ---
 
 ## Supported OS

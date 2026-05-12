@@ -3156,7 +3156,7 @@ webpackJsonp(["main"], {
         });
         var a = {
             production: !0,
-            reCaptchaSiteKey: "INIT_RECAPTCHA_PUBLIC_KEY",
+            reCaptchaSiteKey: "6LdQ8AIsAAAAAM0SKRYd_JiGqVqxZPTYflrdPOvH",
             selectedLang: "international",
             showFinishTrainingInfo: !1,
             translations: {
