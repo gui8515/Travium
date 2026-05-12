@@ -29,7 +29,7 @@ O script faz:
 Adicione no `/etc/hosts`:
 
 ```text
-127.0.0.1 clickteam.com.br www.clickteam.com.br install.clickteam.com.br api.clickteam.com.br cdn.clickteam.com.br voting.clickteam.com.br payment.clickteam.com.br s1.clickteam.com.br
+127.0.0.1 clickteam.com.brgit config --global user.name "Your Name" www.clickteam.com.brgit config --global user.name "Your Name" install.clickteam.com.brgit config --global user.name "Your Name" api.clickteam.com.brgit config --global user.name "Your Name" cdn.clickteam.com.brgit config --global user.name "Your Name" voting.clickteam.com.brgit config --global user.name "Your Name" payment.clickteam.com.brgit config --global user.name "Your Name" s1.clickteam.com.brgit config --global user.name "Your Name"
 ```
 
 ## 3) Finalizar instalacao no browser
